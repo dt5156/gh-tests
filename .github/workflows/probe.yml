@@ -1,0 +1,15 @@
+name: FreeHostsProbe
+on: [push, workflow_dispatch]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Show runner info
+        run: |
+          echo "Runner OS: ${{ runner.os }}"
+          echo "Runner Architecture: ${{ runner.arch }}"
+          uname -a
+          free -h
+          df -h /tmp
+          echo "=== GitHub Actions free runner OK ==="
