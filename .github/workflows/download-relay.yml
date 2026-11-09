@@ -1,4 +1,6 @@
 name: DownloadRelay
+permissions:
+  contents: write
 on:
   workflow_dispatch:
     inputs:
@@ -38,3 +40,4 @@ jobs:
           name: "下载中转 #${{ github.run_number }}"
           body: "workflow_dispatch 触发的下载中转"
           draft: false
+
