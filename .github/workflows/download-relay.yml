@@ -1,0 +1,40 @@
+name: DownloadRelay
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: '要下载的 URL 列表(每行一个)'
+        required: true
+        type: string
+
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download files
+        run: |
+          mkdir -p downloads
+          count=0
+          while IFS= read -r url; do
+            url=$(echo "$url" | tr -d '[:space:]')
+            [ -z "$url" ] && continue
+            count=$((count+1))
+            echo "==> [$count] $url"
+            curl -L --retry 3 --connect-timeout 20 -o "downloads/f${count}_$(date +%s)" "$url" || echo "FAILED: $url"
+          done <<< "${{ github.event.inputs.urls }}"
+          echo "下载完成: $count 个 URL"
+          ls -lh downloads/
+      - name: 打包
+        run: |
+          tar -czf relay-files.tar.gz downloads/
+          ls -lh relay-files.tar.gz
+      - name: 上传到 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: relay-files.tar.gz
+          tag_name: relay-${{ github.run_number }}
+          name: "下载中转 #${{ github.run_number }}"
+          body: "workflow_dispatch 触发的下载中转"
+          draft: false
